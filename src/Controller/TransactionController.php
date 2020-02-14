@@ -27,9 +27,11 @@ class TransactionController extends AbstractController
     {
     $this->tokenStorage = $tokenStorage;
     }
+
     /**
-    * @Route("/transaction", name="transaction")
+    * @Route("/transaction", name="transaction",methods={"POST"})
     */
+
     public function faire_transaction(Request $request, EntityManagerInterface $EntityManagerInterface , SerializerInterface $serializer,ValidatorInterface $validator)
     {
 
@@ -122,8 +124,9 @@ class TransactionController extends AbstractController
                 }
                 shuffle($tab_match);
                 return implode('', array_slice($tab_match, 0, $length));
-                }
 
+                }
+               
                 public function frais($montant)
                 {
                 $frai = $this->getDoctrine()->getRepository(Tarifs::class);
@@ -138,9 +141,72 @@ class TransactionController extends AbstractController
 
                 }
                 //Retrait
-                /**
-     * @Route("/compteExistent", name="creation_compte_PartenaireExistent", methods={"POST"})
-     */
+/**
+* @Route("/retrait", name="faire retrait",methods={"POST"})
+*/
+
+                    public function retrait(Request $request, EntityManagerInterface $entityManager)
+                    {
+                        $values = json_decode($request->getContent());
+                        if(!isset($code)){
+                            
+                    
+                                    //les class 
+                                    $dateJours = new \DateTime();
+                                    $transfert = new Transaction();
+                                 //recuperation du compte coserner pour l'envoi
+                                 $RecupCompte = $this->getDoctrine()->getRepository(Compte::class);
+                                 $compte = $RecupCompte->findOneBy($values->Id);
+                                $codeEnvoi = $this->nbAleatoire(9);
+                                $transfert->setUser($userconnct);
+                                $transfert->setCompte($compte);
+                                $transfert->setNumPieceRecepteur($values->numPieceRecepteur);
+                                $transfert->setCode($codeEnvoi);
+                                $transfert->setFrais($f);
+                                $transfert->setDateEnvoi($date);
+                                $transfert->setCommisionEmetteur($taxeEmet);
+                                $transfert->setCommissionRecepteur($taxeRecep);
+                                $transfert->setCommissionEtat($taxeEtat);
+                                $transfert->setCommissionSysteme($taxeSys);
+                                $transfert->setCode($codeEnvoi);
+                                
+                                $errors = $validator->validate($transfert);
+                                if(count($errors)) {
+                                $errors = $serializer->serialize($errors, 'json');
+                                return new Response($errors, 500, [
+                                'Content-Type' => 'application/json'
+                                ]);
+                                }
+                                $EntityManagerInterface->persist($transfert);
+                                $EntityManagerInterface->flush();
+
+
+                                // mis a joure le solde du compte partenaire 
+                                
+                                $NewSolde = ($compte->getSolde()+$values->montant);
+                                $compte->setSolde($NewSolde);
+
+                                $EntityManagerInterface->persist($compte);
+                                $EntityManagerInterface->flush();
+
+                                $data = [
+                                'status' => 201,
+                                'message' => 'vous avez faire un retrait de  :'.$values->montant.'dont le code est'.$codeEnvoi
+                                ];
+                                return new JsonResponse($data, 201);
+
+                                }
+                                $data = [
+                                'status' => 500,
+                                'message' => ' retait invalide  invalide veuer revoir le code SVP:'
+                                ];
+
+                                return new JsonResponse($data, 500);
+                                
+    
+                        }
+
+                    
 
 
 //femiture
