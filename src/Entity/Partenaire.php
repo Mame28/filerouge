@@ -99,5 +99,6 @@ class Partenaire
         return $this;
     }
 
- 
+    
 }
+

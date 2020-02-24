@@ -39,7 +39,7 @@ class AppFixtures extends Fixture
         $this->addReference('role_sup_admin', $supAdmin);
         $this->addReference('role_admin', $Admin);
         $this->addReference('role_caissier', $Caissier);
-        $this->addReference('role_partenaire', $Caissier);
+        $this->addReference('role_partenaire', $partenaire);
 
         $rolAdmin = $this->getReference('role_sup_admin');
         $rolSupAdmin = $this->getReference('role_admin');

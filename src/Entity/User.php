@@ -85,6 +85,17 @@ class User implements UserInterface
      */
     private $users;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Transaction", mappedBy="user_Retrait")
+     */
+    private $transactions;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Affectation", mappedBy="user")
+     */
+    private $affectations;
+
+
 
     public function __construct()
     {
@@ -93,6 +104,8 @@ class User implements UserInterface
         $this->user_id = new ArrayCollection();
         $this->isActive = true;
         $this->users = new ArrayCollection();
+        $this->transactions = new ArrayCollection();
+        $this->affectations = new ArrayCollection();
     }
    
     public function getId(): ?int
@@ -259,12 +272,12 @@ class User implements UserInterface
 
      public function getImages(): ?string
      {
-         return $this->image;
+         return $this->images;
      }
 
-     public function setImages(string $image): self
+     public function setImages(string $images): self
      {
-         $this->image = $image;
+         $this->images = $images;
 
          return $this;
      }
@@ -323,6 +336,71 @@ class User implements UserInterface
 
          return $this;
      }
+
+     /**
+      * @return Collection|Transaction[]
+      */
+     public function getTransactions(): Collection
+     {
+         return $this->transactions;
+     }
+
+     public function addTransaction(Transaction $transaction): self
+     {
+         if (!$this->transactions->contains($transaction)) {
+             $this->transactions[] = $transaction;
+             $transaction->setUserRetrait($this);
+         }
+
+         return $this;
+     }
+
+     public function removeTransaction(Transaction $transaction): self
+     {
+         if ($this->transactions->contains($transaction)) {
+             $this->transactions->removeElement($transaction);
+             // set the owning side to null (unless already changed)
+             if ($transaction->getUserRetrait() === $this) {
+                 $transaction->setUserRetrait(null);
+             }
+         }
+
+         return $this;
+     }
+
+     /**
+      * @return Collection|Affectation[]
+      */
+     public function getAffectations(): Collection
+     {
+         return $this->affectations;
+     }
+
+     public function addAffectation(Affectation $affectation): self
+     {
+         if (!$this->affectations->contains($affectation)) {
+             $this->affectations[] = $affectation;
+             $affectation->setUser($this);
+         }
+
+         return $this;
+     }
+
+     public function removeAffectation(Affectation $affectation): self
+     {
+         if ($this->affectations->contains($affectation)) {
+             $this->affectations->removeElement($affectation);
+             // set the owning side to null (unless already changed)
+             if ($affectation->getUser() === $this) {
+                 $affectation->setUser(null);
+             }
+         }
+
+         return $this;
+     }
+
+  
+
 
      
      

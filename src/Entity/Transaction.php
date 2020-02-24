@@ -128,6 +128,21 @@ class Transaction
      */
     private $code;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="transactions")
+     */
+    private $user_Retrait;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Compte")
+     */
+    private $compte_retrait;
+
+    /**
+     * @ORM\Column(type="float")
+     */
+    private $MontantTotal;
+
     
 
     public function getId(): ?int
@@ -395,6 +410,42 @@ class Transaction
     public function setCode(?int $code): self
     {
         $this->code = $code;
+
+        return $this;
+    }
+
+    public function getUserRetrait(): ?User
+    {
+        return $this->user_Retrait;
+    }
+
+    public function setUserRetrait(?User $user_Retrait): self
+    {
+        $this->user_Retrait = $user_Retrait;
+
+        return $this;
+    }
+
+    public function getCompteRetrait(): ?Compte
+    {
+        return $this->compte_retrait;
+    }
+
+    public function setCompteRetrait(?Compte $compte_retrait): self
+    {
+        $this->compte_retrait = $compte_retrait;
+
+        return $this;
+    }
+
+    public function getMontantTotal(): ?float
+    {
+        return $this->MontantTotal;
+    }
+
+    public function setMontantTotal(float $MontantTotal): self
+    {
+        $this->MontantTotal = $MontantTotal;
 
         return $this;
     }

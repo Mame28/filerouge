@@ -81,6 +81,7 @@ class TransactionController extends AbstractController
                 $transfert->setCommissionEtat($taxeEtat);
                 $transfert->setCommissionSysteme($taxeSys);
                 $transfert->setCode($codeEnvoi);
+                $transfert->setMontantTotal($values->montant+$f);
                 $errors = $validator->validate($transfert);
                 if(count($errors)) {
                 $errors = $serializer->serialize($errors, 'json');
@@ -94,7 +95,7 @@ class TransactionController extends AbstractController
 
                 // mis a joure le solde du compte partenaire 
                 
-                $NewSolde = ($compte->getSolde()-$values->montant);
+                $NewSolde = ($compte->getSolde()-$values->montant-$f);
                 $compte->setSolde($NewSolde);
 
                 $EntityManagerInterface->persist($compte);
@@ -102,7 +103,7 @@ class TransactionController extends AbstractController
 
                 $data = [
                 'status' => 201,
-                'message' => 'vous avez faire un transfert :'.$values->montant.'dont le code est'.$codeEnvoi
+                'message' => 'vous avez faire un transfert :'.$values->montant.' CEFA dont le code est '.$codeEnvoi
                 ];
                 return new JsonResponse($data, 201);
 
@@ -141,9 +142,9 @@ class TransactionController extends AbstractController
 
                 }
                 //Retrait
-/**
-* @Route("/retrait", name="faire retrait",methods={"POST"})
-*/
+                /**
+                * @Route("/retrait", name="faire retrait",methods={"PUT"})
+                */
 
                     public function retrait(Request $request, EntityManagerInterface $entityManager)
                     {
@@ -153,47 +154,36 @@ class TransactionController extends AbstractController
                     
                                     //les class 
                                     $dateJours = new \DateTime();
-                                    $transfert = new Transaction();
+                                 
                                  //recuperation du compte coserner pour l'envoi
+                                 $userconnct= $this->tokenStorage->getToken()->getUser();
+                                
                                  $RecupCompte = $this->getDoctrine()->getRepository(Compte::class);
-                                 $compte = $RecupCompte->findOneBy($values->Id);
-                                $codeEnvoi = $this->nbAleatoire(9);
-                                $transfert->setUser($userconnct);
-                                $transfert->setCompte($compte);
+                                 $compte = $RecupCompte->findOneById($values->id);
+                                 $RecupTransaction = $this->getDoctrine()->getRepository(Transaction::class);
+                                 $transfert = $RecupTransaction->findOneByCode($values->code);
+                                 if($transfert){
+                                  //  var_dump("ok");die;
+
+                                $transfert->setUserRetrait($userconnct);
+                                $transfert->setCompteRetrait($compte);
                                 $transfert->setNumPieceRecepteur($values->numPieceRecepteur);
-                                $transfert->setCode($codeEnvoi);
-                                $transfert->setFrais($f);
-                                $transfert->setDateEnvoi($date);
-                                $transfert->setCommisionEmetteur($taxeEmet);
-                                $transfert->setCommissionRecepteur($taxeRecep);
-                                $transfert->setCommissionEtat($taxeEtat);
-                                $transfert->setCommissionSysteme($taxeSys);
-                                $transfert->setCode($codeEnvoi);
-                                
-                                $errors = $validator->validate($transfert);
-                                if(count($errors)) {
-                                $errors = $serializer->serialize($errors, 'json');
-                                return new Response($errors, 500, [
-                                'Content-Type' => 'application/json'
-                                ]);
-                                }
-                                $EntityManagerInterface->persist($transfert);
-                                $EntityManagerInterface->flush();
+                                $transfert->setDateRetrait($dateJours);
 
+                            
+                               
 
-                                // mis a joure le solde du compte partenaire 
-                                
-                                $NewSolde = ($compte->getSolde()+$values->montant);
-                                $compte->setSolde($NewSolde);
-
-                                $EntityManagerInterface->persist($compte);
-                                $EntityManagerInterface->flush();
+                                $entityManager->persist($transfert);
+                                $entityManager->flush();
 
                                 $data = [
                                 'status' => 201,
-                                'message' => 'vous avez faire un retrait de  :'.$values->montant.'dont le code est'.$codeEnvoi
+                                'message' => 'vous avez faire un retrait '
                                 ];
                                 return new JsonResponse($data, 201);
+
+                            }
+                           // var_dump("non ok");die;
 
                                 }
                                 $data = [

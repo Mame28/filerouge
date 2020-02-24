@@ -61,12 +61,18 @@ class Compte
      */
     private $comptes;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Affectation", mappedBy="compte", orphanRemoval=true)
+     */
+    private $affectations;
+
     public function __construct()
     {
         $this->depots = new ArrayCollection();
         $this->transactions = new ArrayCollection();
         $this->tarifs = new ArrayCollection();
         $this->comptes = new ArrayCollection();
+        $this->affectations = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -252,6 +258,37 @@ class Compte
             // set the owning side to null (unless already changed)
             if ($compte->getCompte() === $this) {
                 $compte->setCompte(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Affectation[]
+     */
+    public function getAffectations(): Collection
+    {
+        return $this->affectations;
+    }
+
+    public function addAffectation(Affectation $affectation): self
+    {
+        if (!$this->affectations->contains($affectation)) {
+            $this->affectations[] = $affectation;
+            $affectation->setCompte($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAffectation(Affectation $affectation): self
+    {
+        if ($this->affectations->contains($affectation)) {
+            $this->affectations->removeElement($affectation);
+            // set the owning side to null (unless already changed)
+            if ($affectation->getCompte() === $this) {
+                $affectation->setCompte(null);
             }
         }
 
